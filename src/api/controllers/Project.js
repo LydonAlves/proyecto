@@ -23,7 +23,10 @@ const getProjectById = async (req, res, next) => {
 const postProject = async (req, res, next) => {
   try {
     const newProject = new Project(req.body)
-    console.log(newProject)
+    if (req.file) {
+      newProject.image = req.file.path
+    }
+
     const savedProject = await newProject.save()
     return res.status(201).json(savedProject)
   } catch (error) {
@@ -34,7 +37,7 @@ const postProject = async (req, res, next) => {
 const putProject = async (req, res, next) => {
   try {
     const { id } = req.params
-    const oldProject = await project.findById(id)
+    const oldProject = await Project.findById(id)
     const projectUpdates = new Project(req.body)
     projectUpdates._id = id
 
@@ -66,8 +69,9 @@ const putProject = async (req, res, next) => {
 const deleteProject = async (req, res, next) => {
   try {
     const { id } = req.params
-    const projectDeleted = await Project.findByIdAndDelete(id)
 
+    const projectDeleted = await Project.findByIdAndDelete(id)
+    console.log(projectDeleted)
     deleteFile(projectDeleted.image)
 
     return res.status(200).json(projectDeleted)

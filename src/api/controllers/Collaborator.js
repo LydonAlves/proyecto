@@ -23,7 +23,19 @@ const getCollaboratorById = async (req, res, next) => {
 const postCollaborator = async (req, res, next) => {
   try {
     const newCollaborator = new Collaborator(req.body)
-    console.log(newCollaborator)
+
+    if (req.file) {
+      newCollaborator.profileImage = req.file.path
+    }
+
+    const duplicateCollaborator = await Collaborator.findOne({
+      name: req.body.name
+    })
+
+    if (duplicateCollaborator) {
+      return res.status(400).json('Name already in use')
+    }
+
     const savedCollaborator = await newCollaborator.save()
     return res.status(201).json(savedCollaborator)
   } catch (error) {

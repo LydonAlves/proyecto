@@ -5,9 +5,10 @@ const bcrypt = require('bcrypt')
 
 const getusers = async (req, res, next) => {
   try {
-    const users = await User.find
+    const users = await User.find()
     return res.status(200).json(users)
   } catch (error) {
+    console.error(error)
     return res.status(400).json(error)
   }
 }
@@ -17,10 +18,15 @@ const register = async (req, res, next) => {
     const newUser = new User({
       userName: req.body.userName,
       password: req.body.password,
+      profileImage: req.body.profileImage,
       rol: 'user'
     })
 
-    const duplicateUser = await User.findOne({ username: req.body.userName })
+    if (req.file) {
+      newUser.profileImage = req.file.path
+    }
+
+    const duplicateUser = await User.findOne({ userName: req.body.userName })
 
     if (duplicateUser) {
       return res.status(400).json('Name already in use')
@@ -36,14 +42,13 @@ const register = async (req, res, next) => {
 const login = async (req, res, next) => {
   try {
     const user = await User.findOne({ userName: req.body.userName })
-
     if (!user) {
-      return res.status(200).json("user doesn't exist")
+      return res.status(404).json("user doesn't exist")
     }
 
     if (bcrypt.compareSync(req.body.password, user.password)) {
       const token = generateSing(user._id)
-      return res.status(200).json(user, token)
+      return res.status(200).json({ user, token })
     } else {
       return res.status(400).json('Incorrect pasword')
     }
@@ -84,6 +89,7 @@ const updateUser = async (req, res, next) => {
 const deleteUser = async (req, res, next) => {
   try {
     const { id } = req.params
+
     const userDeleted = await User.findByIdAndDelete(id)
 
     deleteFile(userDeleted.profileImage)

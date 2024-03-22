@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const collaboratorSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    profileImage: { type: String, required: true },
+    profileImage: { type: String, required: false },
     university: { type: String, required: true },
     course: {
       type: String,
